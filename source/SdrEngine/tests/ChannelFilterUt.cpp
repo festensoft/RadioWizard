@@ -1,8 +1,9 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <gtest/gtest.h>
 #include "ChannelFilter.h"
+
+#include <gtest/gtest.h>
 
 #include <cmath>
 #include <complex>
@@ -18,7 +19,7 @@ using SdrEngine::IqSample;
 
 TEST(ChannelFilterTest, DefaultState_NotConfiguredNotEnabled)
 {
-   ChannelFilter filter;
+   const ChannelFilter filter;
    EXPECT_FALSE(filter.isConfigured());
    EXPECT_FALSE(filter.isEnabled());
    EXPECT_DOUBLE_EQ(filter.getOutputSampleRate(), 0.0);
@@ -87,8 +88,8 @@ TEST(ChannelFilterTest, Process_WhenDisabled_ReturnsEmpty)
    ChannelFilter filter;
    filter.configure(0.0, 200'000.0, 2'400'000.0);
    // Not enabled
-   std::vector<IqSample> input(1024, {1.0F, 0.0F});
-   auto result = filter.process(input);
+   const std::vector<IqSample> input(1024, {1.0F, 0.0F});
+   const auto result = filter.process(input);
    EXPECT_TRUE(result.empty());
 }
 
@@ -97,7 +98,7 @@ TEST(ChannelFilterTest, Process_WhenNotConfigured_ReturnsEmpty)
    ChannelFilter filter;
    filter.setEnabled(true);
    // Not configured
-   std::vector<IqSample> input(1024, {1.0F, 0.0F});
+   const std::vector<IqSample> input(1024, {1.0F, 0.0F});
    auto result = filter.process(input);
    EXPECT_TRUE(result.empty());
 }
@@ -108,7 +109,7 @@ TEST(ChannelFilterTest, Process_EmptyInput_ReturnsEmpty)
    filter.configure(0.0, 200'000.0, 2'400'000.0);
    filter.setEnabled(true);
 
-   std::vector<IqSample> empty;
+   const std::vector<IqSample> empty;
    auto result = filter.process(empty);
    EXPECT_TRUE(result.empty());
 }
@@ -125,7 +126,7 @@ TEST(ChannelFilterTest, Process_OutputIsShorterThanInput)
    filter.setEnabled(true);
 
    const std::size_t n = 4096;
-   std::vector<IqSample> input(n, {0.5F, -0.3F});
+   const std::vector<IqSample> input(n, {0.5F, -0.3F});
    auto result = filter.process(input);
 
    // Output should be significantly smaller due to decimation.
@@ -143,8 +144,7 @@ TEST(ChannelFilterTest, Process_OutputSamplesAreFinite)
    std::vector<IqSample> input(n);
    for (std::size_t i = 0; i < n; ++i)
    {
-      const float phase =
-         2.0F * std::numbers::pi_v<float> * 0.01F * static_cast<float>(i);
+      const float phase = 2.0F * std::numbers::pi_v<float> * 0.01F * static_cast<float>(i);
       input[i] = {std::cos(phase), std::sin(phase)};
    }
 
@@ -169,7 +169,7 @@ TEST(ChannelFilterTest, Process_DcSignal_ZeroOffset_PassesThrough)
 
    // DC signal: constant I=1, Q=0
    const std::size_t n = 8192;
-   std::vector<IqSample> dc(n, {1.0F, 0.0F});
+   const std::vector<IqSample> dc(n, {1.0F, 0.0F});
 
    auto result = filter.process(dc);
    ASSERT_FALSE(result.empty());
@@ -196,7 +196,7 @@ TEST(ChannelFilterTest, Reset_DoesNotCrash)
    filter.configure(0.0, 200'000.0, 2'400'000.0);
    filter.setEnabled(true);
 
-   std::vector<IqSample> input(1024, {1.0F, 0.0F});
+   const std::vector<IqSample> input(1024, {1.0F, 0.0F});
    auto r1 = filter.process(input);
 
    filter.reset();

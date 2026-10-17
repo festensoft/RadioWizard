@@ -1,10 +1,11 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <gtest/gtest.h>
-#include <SdrEngine/SdrEngine.h>
 #include "SoapySdrDevice.h"
+
+#include <SdrEngine/SdrEngine.h>
 #include <SdrEngine/SdrTypes.h>
+#include <gtest/gtest.h>
 
 #include <memory>
 
@@ -14,26 +15,26 @@
 
 TEST(SdrEngineTest, DefaultConstruction_NotRunning)
 {
-   SdrEngine::SdrEngine engine;
+   const SdrEngine::SdrEngine engine;
    EXPECT_FALSE(engine.isRunning());
    EXPECT_EQ(engine.getDevice(), nullptr);
 }
 
 TEST(SdrEngineTest, DefaultFftSize_Is2048)
 {
-   SdrEngine::SdrEngine engine;
+   const SdrEngine::SdrEngine engine;
    EXPECT_EQ(engine.getFftSize(), 2048);
 }
 
 TEST(SdrEngineTest, DefaultCenterFreq_Is100MHz)
 {
-   SdrEngine::SdrEngine engine;
+   const SdrEngine::SdrEngine engine;
    EXPECT_EQ(engine.getCenterFrequency(), 100'000'000u);
 }
 
 TEST(SdrEngineTest, DefaultSampleRate_Is2_4MSps)
 {
-   SdrEngine::SdrEngine engine;
+   const SdrEngine::SdrEngine engine;
    EXPECT_EQ(engine.getSampleRate(), 2'400'000u);
 }
 
@@ -95,7 +96,8 @@ TEST(SdrEngineTest, SpectrumDataHandler_IsAccessible)
 {
    SdrEngine::SdrEngine engine;
    auto& handler = engine.spectrumDataHandler();
-   int id = handler.RegisterListener([](const std::shared_ptr<const SdrEngine::SpectrumData>&) {});
+   const int id =
+       handler.RegisterListener([](const std::shared_ptr<const SdrEngine::SpectrumData>&) {});
    EXPECT_GE(id, 0);
    handler.UnregisterListener(id);
 }
@@ -104,7 +106,8 @@ TEST(SdrEngineTest, IqDataHandler_IsAccessible)
 {
    SdrEngine::SdrEngine engine;
    auto& handler = engine.iqDataHandler();
-   int id = handler.RegisterListener([](const std::shared_ptr<const SdrEngine::IqBuffer>&) {});
+   const int id =
+       handler.RegisterListener([](const std::shared_ptr<const SdrEngine::IqBuffer>&) {});
    EXPECT_GE(id, 0);
    handler.UnregisterListener(id);
 }

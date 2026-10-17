@@ -82,8 +82,6 @@ CommonUtils (found on the system or fetched).
 
 ## Design decisions
 
-- **Layout**: OmniscopeDDS-style modules with `include/<Module>/` public
-  headers and `src/` for everything else; tests colocated under each module.
 - **Static libraries**: SdrEngine and RealTimeGraphs are built as `STATIC`
   libraries for simpler deployment of a single GUI binary.
 - **Conan** manages Qt, FFTW3, liquid-dsp, and GTest. SoapySDR remains a

@@ -41,41 +41,31 @@ option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
 # TSan mutually exclusive at the binary level.
 
 # =============================================================================
-# Compiler Warnings
+# Compiler Warnings (GCC / Clang / AppleClang — MSVC not supported)
 # =============================================================================
 
-set(GCC_WARNINGS
-   -Wall
-   -Wextra
-   -Wshadow
-   -Wnon-virtual-dtor
-   -Wold-style-cast
-   -Wcast-align
-   -Wunused
-   -Woverloaded-virtual
-   -Wconversion
-   -Wsign-conversion
-   -Wnull-dereference
-   -Wdouble-promotion
-   -Wformat=2
-   -Wimplicit-fallthrough
-)
-
-set(MSVC_WARNINGS
-   /W4
-   /permissive-
-   /w14640
-   /w14242
-   /w14254
-   /w14263
-   /w14265
-   /w14287
-)
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-   add_compile_options(${GCC_WARNINGS})
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-   add_compile_options(${MSVC_WARNINGS})
+# MATCHES catches both "Clang" and "AppleClang".  STREQUAL "Clang" alone
+# silently skipped warning flags on macOS Xcode toolchains.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+   add_compile_options(
+      -Wall
+      -Wextra
+      -Wshadow
+      -Wnon-virtual-dtor
+      -Wold-style-cast
+      -Wcast-align
+      -Wunused
+      -Woverloaded-virtual
+      -Wconversion
+      -Wsign-conversion
+      -Wnull-dereference
+      -Wformat=2
+      -Wimplicit-fallthrough
+   )
+else()
+   message(WARNING
+      "Unsupported compiler '${CMAKE_CXX_COMPILER_ID}'. "
+      "RadioWizard expects GCC or Clang/AppleClang.")
 endif()
 
 # =============================================================================
@@ -194,17 +184,6 @@ endif()
 add_subdirectory(source/SdrEngine)
 add_subdirectory(source/RealTimeGraphs)
 add_subdirectory(source/RadioWizardMain)
-
-# =============================================================================
-# Installation
-# =============================================================================
-
-include(GNUInstallDirs)
-
-install(TARGETS RadioWizardMain
-   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-   BUNDLE DESTINATION .
-)
 
 # =============================================================================
 # Summary

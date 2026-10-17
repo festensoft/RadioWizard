@@ -21,8 +21,7 @@
 // Construction
 // ============================================================================
 
-FrequencyInputWidget::FrequencyInputWidget(QWidget* parent)
-   : QWidget(parent)
+FrequencyInputWidget::FrequencyInputWidget(QWidget* parent) : QWidget(parent)
 {
    setMouseTracking(true);
    setCursor(Qt::PointingHandCursor);
@@ -66,13 +65,10 @@ QSize FrequencyInputWidget::sizeHint() const
 {
    // Each digit cell has a gap after it (except last fractional),
    // plus the decimal-point width and the suffix.
-   const double digitsWidth =
-      (_digitWidth * TOTAL_DIGITS) + (DIGIT_GAP * (TOTAL_DIGITS - 1))
-      + _decimalWidth + _suffixWidth;
-   const auto totalWidth =
-      static_cast<int>(std::ceil((MARGIN_X * 2.0) + digitsWidth));
-   const auto totalHeight =
-      static_cast<int>(std::ceil((MARGIN_Y * 2.0) + _digitHeight));
+   const double digitsWidth = (_digitWidth * TOTAL_DIGITS) + (DIGIT_GAP * (TOTAL_DIGITS - 1)) +
+                              _decimalWidth + _suffixWidth;
+   const auto totalWidth = static_cast<int>(std::ceil((MARGIN_X * 2.0) + digitsWidth));
+   const auto totalHeight = static_cast<int>(std::ceil((MARGIN_Y * 2.0) + _digitHeight));
    return {totalWidth, totalHeight};
 }
 
@@ -97,12 +93,11 @@ void FrequencyInputWidget::paintEvent(QPaintEvent* /*event*/)
    const QColor cellBorderIdle(52, 54, 64);
    const QColor cellHover(42, 40, 52);
    const QColor cellBorderHover(180, 150, 60);
-   const QColor digitNormal(220, 185, 70);       // warm amber-gold
-   const QColor digitHover(255, 225, 110);       // bright gold on hover
-   const QColor decimalColor(160, 135, 55);      // slightly dimmer dot
-   const QColor suffixColor(90, 85, 70);         // muted warm grey
-   const QColor arrowIdle(100, 92, 60, 0);       // transparent when idle
-   const QColor arrowActive(220, 190, 80, 200);  // visible on hover
+   const QColor digitNormal(220, 185, 70);      // warm amber-gold
+   const QColor digitHover(255, 225, 110);      // bright gold on hover
+   const QColor decimalColor(160, 135, 55);     // slightly dimmer dot
+   const QColor suffixColor(90, 85, 70);        // muted warm grey
+   const QColor arrowActive(220, 190, 80, 200); // visible on hover
 
    // --- Background gradient ---
    QLinearGradient bgGrad(0, 0, 0, height());
@@ -113,8 +108,7 @@ void FrequencyInputWidget::paintEvent(QPaintEvent* /*event*/)
    // Outer rounded border.
    {
       QPainterPath outline;
-      outline.addRoundedRect(
-         QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), 6.0, 6.0);
+      outline.addRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), 6.0, 6.0);
       painter.setPen(QPen(QColor(55, 55, 65), 1.0));
       painter.drawPath(outline);
    }
@@ -137,24 +131,19 @@ void FrequencyInputWidget::paintEvent(QPaintEvent* /*event*/)
          painter.fillPath(cellPath, cellGrad);
 
          // Cell border.
-         painter.setPen(
-            QPen(hovered ? cellBorderHover : cellBorderIdle, 1.0));
+         painter.setPen(QPen(hovered ? cellBorderHover : cellBorderIdle, 1.0));
          painter.drawPath(cellPath);
       }
 
       // Arrow indicators (only visible on hover).
       if (hovered)
       {
-         const QRectF arrowUp(
-            r.left(), r.top(), r.width(), ARROW_ZONE);
-         const QRectF arrowDown(
-            r.left(), r.bottom() - ARROW_ZONE, r.width(), ARROW_ZONE);
+         const QRectF arrowUp(r.left(), r.top(), r.width(), ARROW_ZONE);
+         const QRectF arrowDown(r.left(), r.bottom() - ARROW_ZONE, r.width(), ARROW_ZONE);
 
          // Brighter arrow on the side the cursor is on.
-         drawArrow(painter,  arrowUp,   true,
-                   _hoverUpper ? arrowActive : arrowActive.darker(200));
-         drawArrow(painter, arrowDown, false,
-                   _hoverUpper ? arrowActive.darker(200) : arrowActive);
+         drawArrow(painter, arrowUp, true, _hoverUpper ? arrowActive : arrowActive.darker(200));
+         drawArrow(painter, arrowDown, false, _hoverUpper ? arrowActive.darker(200) : arrowActive);
       }
 
       // Digit text.
@@ -166,20 +155,18 @@ void FrequencyInputWidget::paintEvent(QPaintEvent* /*event*/)
 
    // --- Decimal point ---
    const double dpX = decimalPointX();
-   const QRectF dpRect(dpX, MARGIN_Y + ARROW_ZONE,
-                        _decimalWidth, _digitHeight - (2.0 * ARROW_ZONE));
+   const QRectF dpRect(dpX, MARGIN_Y + ARROW_ZONE, _decimalWidth,
+                       _digitHeight - (2.0 * ARROW_ZONE));
    painter.setFont(_digitFont);
    painter.setPen(decimalColor);
    painter.drawText(dpRect, Qt::AlignCenter, QStringLiteral("."));
 
    // --- "MHz" suffix ---
-   const double suffixX =
-      dpX + _decimalWidth + ((_digitWidth + DIGIT_GAP) * NUM_FRACTIONAL_DIGITS);
+   const double suffixX = dpX + _decimalWidth + ((_digitWidth + DIGIT_GAP) * NUM_FRACTIONAL_DIGITS);
    const QRectF suffixRect(suffixX, MARGIN_Y, _suffixWidth, _digitHeight);
    painter.setFont(_suffixFont);
    painter.setPen(suffixColor);
-   painter.drawText(suffixRect, Qt::AlignVCenter | Qt::AlignLeft,
-                    QStringLiteral("MHz"));
+   painter.drawText(suffixRect, Qt::AlignVCenter | Qt::AlignLeft, QStringLiteral("MHz"));
 }
 
 void FrequencyInputWidget::mousePressEvent(QMouseEvent* event)
@@ -268,8 +255,7 @@ void FrequencyInputWidget::freqToDigits()
    // Convert frequency to an integer count of 0.0001 MHz steps
    // to avoid floating-point rounding issues.
    auto ticks = static_cast<int64_t>(std::round(_freqMhz * 10000.0));
-   ticks = std::clamp(ticks, static_cast<int64_t>(0),
-                      static_cast<int64_t>(999999999));
+   ticks = std::clamp(ticks, static_cast<int64_t>(0), static_cast<int64_t>(999999999));
 
    // Extract digits from most-significant to least-significant.
    // Digit 0 is the ten-thousands place of the integer part,
@@ -288,8 +274,7 @@ void FrequencyInputWidget::digitsToFreq()
    {
       ticks = (ticks * 10) + _digits[static_cast<size_t>(i)];
    }
-   _freqMhz = std::clamp(static_cast<double>(ticks) / 10000.0,
-                          MIN_FREQ_MHZ, MAX_FREQ_MHZ);
+   _freqMhz = std::clamp(static_cast<double>(ticks) / 10000.0, MIN_FREQ_MHZ, MAX_FREQ_MHZ);
 }
 
 void FrequencyInputWidget::incrementDigit(int digitIndex)
@@ -361,10 +346,8 @@ QRectF FrequencyInputWidget::digitRect(int index) const
    else
    {
       // Integer digits + decimal point + fractional offset.
-      xPos += ((_digitWidth + DIGIT_GAP) * NUM_INTEGER_DIGITS)
-            + _decimalWidth
-            + ((_digitWidth + DIGIT_GAP)
-               * (index - NUM_INTEGER_DIGITS));
+      xPos += ((_digitWidth + DIGIT_GAP) * NUM_INTEGER_DIGITS) + _decimalWidth +
+              ((_digitWidth + DIGIT_GAP) * (index - NUM_INTEGER_DIGITS));
    }
    return {xPos, MARGIN_Y, _digitWidth, _digitHeight};
 }
@@ -374,8 +357,8 @@ double FrequencyInputWidget::decimalPointX() const
    return MARGIN_X + ((_digitWidth + DIGIT_GAP) * NUM_INTEGER_DIGITS);
 }
 
-void FrequencyInputWidget::drawArrow(
-   QPainter& painter, const QRectF& rect, bool up, const QColor& color)
+void FrequencyInputWidget::drawArrow(QPainter& painter, const QRectF& rect, bool up,
+                                     const QColor& color)
 {
    if (color.alpha() == 0)
    {
@@ -390,14 +373,12 @@ void FrequencyInputWidget::drawArrow(
    QPolygonF tri;
    if (up)
    {
-      tri << QPointF(cx, cy - halfH)
-          << QPointF(cx - halfW, cy + halfH)
+      tri << QPointF(cx, cy - halfH) << QPointF(cx - halfW, cy + halfH)
           << QPointF(cx + halfW, cy + halfH);
    }
    else
    {
-      tri << QPointF(cx, cy + halfH)
-          << QPointF(cx - halfW, cy - halfH)
+      tri << QPointF(cx, cy + halfH) << QPointF(cx - halfW, cy - halfH)
           << QPointF(cx + halfW, cy - halfH);
    }
 
@@ -415,14 +396,13 @@ void FrequencyInputWidget::computeMetrics()
    _digitWidth = 0.0;
    for (char c = '0'; c <= '9'; ++c)
    {
-      _digitWidth = std::max(_digitWidth,
-                             fm.horizontalAdvance(QChar(c)));
+      _digitWidth = std::max(_digitWidth, fm.horizontalAdvance(QChar(c)));
    }
    // Padding so digits don't touch cell edges.
    _digitWidth += 6.0;
 
    // Height includes space for arrow zones above and below the digit.
-   _digitHeight = fm.height() + (2.0 * ARROW_ZONE)+ 4.0;
+   _digitHeight = fm.height() + (2.0 * ARROW_ZONE) + 4.0;
    _decimalWidth = fm.horizontalAdvance(QChar('.')) + 2.0;
 
    const QFontMetricsF sfm(_suffixFont);

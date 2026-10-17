@@ -261,8 +261,14 @@ bool SdrEngine::start(int deviceIndex)
    }
 
    // Apply cached tuning.
-   std::ignore = _device->setCenterFrequency(_centerFreqHz);
-   std::ignore = _device->setSampleRate(_sampleRateHz);
+   if (!_device->setCenterFrequency(_centerFreqHz))
+   {
+      GPWARN("Failed to set center frequency to {} Hz", _centerFreqHz.load());
+   }
+   if (!_device->setSampleRate(_sampleRateHz))
+   {
+      GPWARN("Failed to set sample rate to {} Hz", _sampleRateHz.load());
+   }
 
    // Start the processing thread.
    _running = true;

@@ -1,8 +1,9 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <gtest/gtest.h>
 #include "FftProcessor.h"
+
+#include <gtest/gtest.h>
 
 #include <cmath>
 #include <complex>
@@ -19,13 +20,13 @@ using SdrEngine::WindowFunction;
 
 TEST(FftProcessorTest, DefaultConstruction_SizeIs2048)
 {
-   FftProcessor proc;
+   const FftProcessor proc;
    EXPECT_EQ(proc.getFftSize(), 2048);
 }
 
 TEST(FftProcessorTest, CustomSize_ReportsCorrectSize)
 {
-   FftProcessor proc(1024, WindowFunction::Hanning);
+   const FftProcessor proc(1024, WindowFunction::Hanning);
    EXPECT_EQ(proc.getFftSize(), 1024);
    EXPECT_EQ(proc.getWindowFunction(), WindowFunction::Hanning);
 }
@@ -55,11 +56,11 @@ TEST(FftProcessorTest, SetWindowFunction_ChangesFunction)
 TEST(FftProcessorTest, Process_DcTone_PeakAtCenter)
 {
    constexpr size_t N = 1024;
-   FftProcessor proc(N, WindowFunction::Rectangular);
+   const FftProcessor proc(N, WindowFunction::Rectangular);
 
    // All-ones signal → DC tone.  After FFT-shift the DC bin should be
    // at index N/2 and be the largest bin.
-   std::vector<std::complex<float>> dc(N, {1.0F, 0.0F});
+   const std::vector<std::complex<float>> dc(N, {1.0F, 0.0F});
    auto result = proc.process(dc);
 
    ASSERT_EQ(result.size(), N);
@@ -73,7 +74,7 @@ TEST(FftProcessorTest, Process_DcTone_PeakAtCenter)
    {
       if (i != dcBin)
       {
-         EXPECT_LT(result[i], dcMag)  << "Bin " << i << " should be less than DC bin";
+         EXPECT_LT(result[i], dcMag) << "Bin " << i << " should be less than DC bin";
       }
    }
 }
@@ -85,18 +86,16 @@ TEST(FftProcessorTest, Process_DcTone_PeakAtCenter)
 TEST(FftProcessorTest, Process_PureTone_PeakAtExpectedBin)
 {
    constexpr size_t N = 1024;
-   FftProcessor proc(N, WindowFunction::Rectangular);
+   const FftProcessor proc(N, WindowFunction::Rectangular);
 
    // Generate a tone at bin +64 (i.e. 64/1024 of the sample rate).
    constexpr size_t TONE_BIN = 64;
-   const float freqNorm =
-      static_cast<float>(TONE_BIN) / static_cast<float>(N);
+   const float freqNorm = static_cast<float>(TONE_BIN) / static_cast<float>(N);
 
    std::vector<std::complex<float>> signal(static_cast<std::size_t>(N));
    for (size_t i = 0; i < N; ++i)
    {
-      const float phase =
-         2.0F * std::numbers::pi_v<float> * freqNorm * static_cast<float>(i);
+      const float phase = 2.0F * std::numbers::pi_v<float> * freqNorm * static_cast<float>(i);
       signal[static_cast<std::size_t>(i)] = {std::cos(phase), std::sin(phase)};
    }
 
@@ -104,7 +103,7 @@ TEST(FftProcessorTest, Process_PureTone_PeakAtExpectedBin)
 
    // After fftshift, positive frequency bin k maps to index N/2 + k.
    const auto peakIdx = (N / 2) + TONE_BIN;
-   float peakVal = result[peakIdx];
+   const float peakVal = result[peakIdx];
 
    // Peak should be the maximum in the entire spectrum.
    for (std::size_t i = 0; i < result.size(); ++i)
@@ -112,7 +111,7 @@ TEST(FftProcessorTest, Process_PureTone_PeakAtExpectedBin)
       if (i != peakIdx)
       {
          EXPECT_LT(result[i], peakVal)
-            << "Bin " << i << " should be less than tone bin " << peakIdx;
+             << "Bin " << i << " should be less than tone bin " << peakIdx;
       }
    }
 }
@@ -124,9 +123,9 @@ TEST(FftProcessorTest, Process_PureTone_PeakAtExpectedBin)
 TEST(FftProcessorTest, Process_ZeroInput_AllBinsVeryLow)
 {
    constexpr size_t N = 512;
-   FftProcessor proc(N, WindowFunction::BlackmanHarris);
+   const FftProcessor proc(N, WindowFunction::BlackmanHarris);
 
-   std::vector<std::complex<float>> zeros(N, {0.0F, 0.0F});
+   const std::vector<std::complex<float>> zeros(N, {0.0F, 0.0F});
    auto result = proc.process(zeros);
 
    ASSERT_EQ(result.size(), N);
@@ -145,10 +144,10 @@ TEST(FftProcessorTest, Process_ZeroInput_AllBinsVeryLow)
 TEST(FftProcessorTest, Process_OutputSizeMatchesFftSize)
 {
    constexpr int N = 2048;
-   FftProcessor proc(N);
+   const FftProcessor proc(N);
 
    // Pass fewer samples than FFT size (zero-padded).
-   std::vector<std::complex<float>> small(256, {1.0F, 0.0F});
+   const std::vector<std::complex<float>> small(256, {1.0F, 0.0F});
    auto result = proc.process(small);
    EXPECT_EQ(result.size(), static_cast<std::size_t>(N));
 }
@@ -160,13 +159,13 @@ TEST(FftProcessorTest, Process_OutputSizeMatchesFftSize)
 TEST(FftProcessorTest, MoveConstruction_Works)
 {
    FftProcessor a(1024, WindowFunction::Hanning);
-   FftProcessor b(std::move(a));
+   const FftProcessor b(std::move(a));
 
    EXPECT_EQ(b.getFftSize(), 1024);
    EXPECT_EQ(b.getWindowFunction(), WindowFunction::Hanning);
 
    // Moved-from object should still be usable (but empty plan).
-   std::vector<std::complex<float>> dc(1024, {1.0F, 0.0F});
+   const std::vector<std::complex<float>> dc(1024, {1.0F, 0.0F});
    auto result = b.process(dc);
    EXPECT_EQ(result.size(), 1024u);
 }
@@ -178,15 +177,12 @@ TEST(FftProcessorTest, MoveConstruction_Works)
 TEST(FftProcessorTest, AllWindowFunctions_ProduceValidOutput)
 {
    constexpr int N = 512;
-   const std::vector<std::complex<float>> signal(
-      static_cast<std::size_t>(N), {0.5F, -0.3F});
+   const std::vector<std::complex<float>> signal(static_cast<std::size_t>(N), {0.5F, -0.3F});
 
-   for (auto wf : {WindowFunction::Rectangular,
-                    WindowFunction::Hanning,
-                    WindowFunction::BlackmanHarris,
-                    WindowFunction::FlatTop})
+   for (auto wf : {WindowFunction::Rectangular, WindowFunction::Hanning,
+                   WindowFunction::BlackmanHarris, WindowFunction::FlatTop})
    {
-      FftProcessor proc(N, wf);
+      const FftProcessor proc(N, wf);
       auto result = proc.process(signal);
       ASSERT_EQ(result.size(), static_cast<std::size_t>(N));
 

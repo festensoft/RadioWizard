@@ -1,26 +1,35 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <RealTimeGraphs/PlotWidgetBase.h>
-
 #include "BandwidthSelector.h"
+#include "ColorMap.h"
 #include "CommonGuiUtils.h"
 #include "PlotCursorOverlay.h"
+
+#include <RealTimeGraphs/PlotWidgetBase.h>
 
 #include <algorithm>
 #include <cmath>
 
 namespace RealTimeGraphs
 {
+std::size_t colorPaletteCount()
+{
+   return ColorMap::paletteCount();
+}
+
+std::string colorPaletteName(std::size_t index)
+{
+   return ColorMap::paletteName(ColorMap::paletteAt(index));
+}
 
 // ============================================================================
 // Construction
 // ============================================================================
 
 PlotWidgetBase::PlotWidgetBase(QWidget* parent)
-   : QWidget(parent)
-   , _cursorOverlay{std::make_unique<PlotCursorOverlay>()}
-   , _bwSelector{std::make_unique<BandwidthSelector>()}
+    : QWidget(parent), _cursorOverlay{std::make_unique<PlotCursorOverlay>()},
+      _bwSelector{std::make_unique<BandwidthSelector>()}
 {
    setAttribute(Qt::WA_OpaquePaintEvent);
    setMouseTracking(true);
@@ -38,9 +47,9 @@ PlotWidgetBase::~PlotWidgetBase() = default;
 void PlotWidgetBase::setFrequencyRange(double centerFreqHz, double bandwidthHz)
 {
    _centerFreqHz = centerFreqHz;
-   _bandwidthHz  = bandwidthHz;
-   _viewXStart   = 0.0;
-   _viewXEnd     = 1.0;
+   _bandwidthHz = bandwidthHz;
+   _viewXStart = 0.0;
+   _viewXEnd = 1.0;
 
    if (_bwSelector->isEnabled())
    {
@@ -67,7 +76,7 @@ void PlotWidgetBase::setXViewRange(double xStart, double xEnd)
       return;
    }
    _viewXStart = xStart;
-   _viewXEnd   = xEnd;
+   _viewXEnd = xEnd;
    onViewRangeChanged();
    update();
 }
@@ -84,8 +93,7 @@ void PlotWidgetBase::clearLinkedCursorX()
    update();
 }
 
-void PlotWidgetBase::setLinkedMeasCursors(double x1Valid, double x1,
-                                          double x2Valid, double x2)
+void PlotWidgetBase::setLinkedMeasCursors(double x1Valid, double x1, double x2Valid, double x2)
 {
    std::optional<double> opt1;
    std::optional<double> opt2;
@@ -161,9 +169,8 @@ void PlotWidgetBase::emitMeasCursorsChanged()
 {
    const auto& c1 = _cursorOverlay->measCursor1();
    const auto& c2 = _cursorOverlay->measCursor2();
-   emit measCursorsChanged(
-      c1.has_value() ? 1.0 : 0.0, c1.has_value() ? c1->x : 0.0,
-      c2.has_value() ? 1.0 : 0.0, c2.has_value() ? c2->x : 0.0);
+   emit measCursorsChanged(c1.has_value() ? 1.0 : 0.0, c1.has_value() ? c1->x : 0.0,
+                           c2.has_value() ? 1.0 : 0.0, c2.has_value() ? c2->x : 0.0);
 }
 
 QString PlotWidgetBase::formatXValue(double dataFrac) const
@@ -186,8 +193,8 @@ QString PlotWidgetBase::formatDeltaXValue(double x1, double x2) const
       const double freq2 = startFreq + (x2 * _bandwidthHz);
       const double deltaFreq = freq1 - freq2;
       const QString sign = (deltaFreq < 0.0) ? "-" : "";
-      return QString::fromUtf8("\u0394f: ") + sign
-           + QString::fromStdString(formatFrequency(std::abs(deltaFreq)));
+      return QString::fromUtf8("\u0394f: ") + sign +
+             QString::fromStdString(formatFrequency(std::abs(deltaFreq)));
    }
    const double dx = x1 - x2;
    return QString::fromUtf8("\u0394x: ") + QString::number(dx, 'f', 4);
@@ -195,8 +202,7 @@ QString PlotWidgetBase::formatDeltaXValue(double x1, double x2) const
 
 void PlotWidgetBase::syncBandwidthOverlay()
 {
-   _cursorOverlay->setBandwidthCursorHalfWidth(
-      _bwSelector->halfWidthFraction(_bandwidthHz));
+   _cursorOverlay->setBandwidthCursorHalfWidth(_bwSelector->halfWidthFraction(_bandwidthHz));
 }
 
 bool PlotWidgetBase::processCursorMove(const QPoint& pos)
@@ -204,10 +210,9 @@ bool PlotWidgetBase::processCursorMove(const QPoint& pos)
    const QRect area = plotArea();
    if (_cursorOverlay->handleMouseMove(pos, area))
    {
-      const double xFrac = static_cast<double>(pos.x() - area.left())
-                         / static_cast<double>(area.width());
-      const double dataX = _viewXStart +
-                         (std::clamp(xFrac, 0.0, 1.0) * (_viewXEnd - _viewXStart));
+      const double xFrac =
+          static_cast<double>(pos.x() - area.left()) / static_cast<double>(area.width());
+      const double dataX = _viewXStart + (std::clamp(xFrac, 0.0, 1.0) * (_viewXEnd - _viewXStart));
       emit trackingCursorXChanged(dataX);
       update();
       return true;

@@ -1,16 +1,16 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <RealTimeGraphs/OscilloscopeWidget.h>
 #include "CommonGuiUtils.h"
 
+#include <RealTimeGraphs/OscilloscopeWidget.h>
+
 #include <QMouseEvent>
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QWheelEvent>
-
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -22,8 +22,7 @@ namespace RealTimeGraphs
 // Construction
 // ============================================================================
 
-OscilloscopeWidget::OscilloscopeWidget(QWidget* parent)
-   : QWidget(parent)
+OscilloscopeWidget::OscilloscopeWidget(QWidget* parent) : QWidget(parent)
 {
    setMinimumSize(OscilloscopeWidget::minimumSizeHint());
    setAttribute(Qt::WA_OpaquePaintEvent);
@@ -32,28 +31,24 @@ OscilloscopeWidget::OscilloscopeWidget(QWidget* parent)
    _pauseButton->setToolTip("Pause/Resume");
    _pauseButton->setFixedSize(28, 28);
    _pauseButton->setFocusPolicy(Qt::NoFocus);
-   _pauseButton->setStyleSheet(
-      "QPushButton { background: rgba(30,30,40,180); color: #cccccc;"
-      " border: 1px solid #555; border-radius: 4px; font-size: 14px; }"
-      "QPushButton:hover { background: rgba(60,60,80,200); }"
-      "QPushButton:checked { color: #ff6644; }");
+   _pauseButton->setStyleSheet("QPushButton { background: rgba(30,30,40,180); color: #cccccc;"
+                               " border: 1px solid #555; border-radius: 4px; font-size: 14px; }"
+                               "QPushButton:hover { background: rgba(60,60,80,200); }"
+                               "QPushButton:checked { color: #ff6644; }");
    _pauseButton->setCheckable(true);
-   connect(_pauseButton, &QPushButton::toggled, this,
-           &OscilloscopeWidget::setPaused);
+   connect(_pauseButton, &QPushButton::toggled, this, &OscilloscopeWidget::setPaused);
 
    _triggerButton = new QPushButton(QStringLiteral("T"), this);
    _triggerButton->setToolTip("Trigger: pause when signal exceeds threshold");
    _triggerButton->setFixedSize(28, 28);
    _triggerButton->setFocusPolicy(Qt::NoFocus);
-   _triggerButton->setStyleSheet(
-      "QPushButton { background: rgba(30,30,40,180); color: #cccccc;"
-      " border: 1px solid #555; border-radius: 4px; font-size: 12px;"
-      " font-weight: bold; }"
-      "QPushButton:hover { background: rgba(60,60,80,200); }"
-      "QPushButton:checked { color: #44ff44; border-color: #44ff44; }");
+   _triggerButton->setStyleSheet("QPushButton { background: rgba(30,30,40,180); color: #cccccc;"
+                                 " border: 1px solid #555; border-radius: 4px; font-size: 12px;"
+                                 " font-weight: bold; }"
+                                 "QPushButton:hover { background: rgba(60,60,80,200); }"
+                                 "QPushButton:checked { color: #44ff44; border-color: #44ff44; }");
    _triggerButton->setCheckable(true);
-   connect(_triggerButton, &QPushButton::toggled, this,
-           &OscilloscopeWidget::setTriggerEnabled);
+   connect(_triggerButton, &QPushButton::toggled, this, &OscilloscopeWidget::setTriggerEnabled);
 
    _capture.resize(CAPTURE_CAPACITY);
    _scratch.reserve(4096);
@@ -61,9 +56,8 @@ OscilloscopeWidget::OscilloscopeWidget(QWidget* parent)
    // Repaint at most ~60 Hz regardless of incoming data rate.
    _repaintTimer = new QTimer(this);
    _repaintTimer->setTimerType(Qt::PreciseTimer);
-   _repaintTimer->setInterval(16);   // ~60 Hz
-   connect(_repaintTimer, &QTimer::timeout, this, [this]()
-   {
+   _repaintTimer->setInterval(16); // ~60 Hz
+   connect(_repaintTimer, &QTimer::timeout, this, [this]() {
       if (_dirty)
       {
          _dirty = false;
@@ -106,8 +100,7 @@ void OscilloscopeWidget::setData(const std::vector<std::complex<float>>& samples
 
       const auto tailSpace = CAPTURE_CAPACITY - _captureHead;
       const auto first = std::min(n, tailSpace);
-      std::copy(src, src + first, _capture.begin()
-                + static_cast<std::ptrdiff_t>(_captureHead));
+      std::copy(src, src + first, _capture.begin() + static_cast<std::ptrdiff_t>(_captureHead));
       if (n > first)
       {
          std::copy(src + first, src + n, _capture.begin());
@@ -119,7 +112,7 @@ void OscilloscopeWidget::setData(const std::vector<std::complex<float>>& samples
       _viewOffset = 0;
    }
 
-   _dirty = true;  // coalesced by the 60 Hz repaint timer
+   _dirty = true; // coalesced by the 60 Hz repaint timer
 }
 
 void OscilloscopeWidget::setAxisRange(float range)
@@ -169,8 +162,7 @@ void OscilloscopeWidget::setPaused(bool paused)
    {
       _pauseButton->setChecked(paused);
    }
-   _pauseButton->setText(paused ? QStringLiteral("\u25B6")
-                                : QStringLiteral("\u23F8"));
+   _pauseButton->setText(paused ? QStringLiteral("\u25B6") : QStringLiteral("\u23F8"));
 
    // When resuming, snap the view back to the newest sample.
    if (!paused)
@@ -251,8 +243,7 @@ void OscilloscopeWidget::paintEvent(QPaintEvent* /*event*/)
    QPainter painter(this);
    painter.setRenderHint(QPainter::Antialiasing, true);
 
-   const QRect plotArea(MARGIN_LEFT, MARGIN_TOP,
-                        width() - MARGIN_LEFT - MARGIN_RIGHT,
+   const QRect plotArea(MARGIN_LEFT, MARGIN_TOP, width() - MARGIN_LEFT - MARGIN_RIGHT,
                         height() - MARGIN_TOP - MARGIN_BOTTOM);
    if (plotArea.width() <= 0 || plotArea.height() <= 0)
    {
@@ -305,10 +296,8 @@ void OscilloscopeWidget::wheelEvent(QWheelEvent* event)
       constexpr std::size_t MIN_TIME_SPAN = 16;
       constexpr std::size_t MAX_TIME_SPAN = CAPTURE_CAPACITY;
       constexpr float TIME_ZOOM_FACTOR = 1.15F;
-      const float factor = (deltaY > 0) ? (1.0F / TIME_ZOOM_FACTOR)
-                                         : TIME_ZOOM_FACTOR;
-      auto newSpan = static_cast<std::size_t>(
-         static_cast<float>(_timeSpan) * factor);
+      const float factor = (deltaY > 0) ? (1.0F / TIME_ZOOM_FACTOR) : TIME_ZOOM_FACTOR;
+      auto newSpan = static_cast<std::size_t>(static_cast<float>(_timeSpan) * factor);
       newSpan = std::clamp(newSpan, MIN_TIME_SPAN, MAX_TIME_SPAN);
 
       {
@@ -319,11 +308,9 @@ void OscilloscopeWidget::wheelEvent(QWheelEvent* event)
          if (_paused && _captureSize > 0 && oldSpan != newSpan)
          {
             const long long oldCenter =
-               static_cast<long long>(_viewOffset) +
-               static_cast<long long>(oldSpan) / 2;
-            long long newOff = oldCenter -
-               static_cast<long long>(newSpan) / 2;
-            if (newOff < 0) newOff = 0;
+                static_cast<long long>(_viewOffset) + (static_cast<long long>(oldSpan) / 2L);
+            long long newOff = oldCenter - (static_cast<long long>(newSpan) / 2L);
+            newOff = std::max(newOff, 0LL);
             _viewOffset = static_cast<std::size_t>(newOff);
          }
          clampViewOffsetLocked();
@@ -375,30 +362,26 @@ void OscilloscopeWidget::drawGrid(QPainter& painter, const QRect& area) const
    constexpr int H_DIVS = 8;
    constexpr int V_DIVS = 8;
 
-   PlotUtils::drawRectangularGrid(painter, area, H_DIVS, V_DIVS,
-                                         true, false);
+   PlotUtils::drawRectangularGrid(painter, area, H_DIVS, V_DIVS, true, false);
 
    PlotUtils::setupTickLabelPainter(painter);
 
    // Y-axis tick labels (amplitude)
    for (int i = 0; i <= H_DIVS; i += 2)
    {
-      const float val = _axisRange -
-                        (2.0F * _axisRange * static_cast<float>(i) /
-                         static_cast<float>(H_DIVS));
+      const float val =
+          _axisRange - (2.0F * _axisRange * static_cast<float>(i) / static_cast<float>(H_DIVS));
       const int y = area.top() + ((i * area.height()) / H_DIVS);
       const QString label = QString::number(static_cast<double>(val), 'f', 2);
       PlotUtils::drawYTick(painter, area, MARGIN_LEFT, y, label);
    }
 
    // X-axis tick labels (time)
-   const double totalTimeSec =
-      static_cast<double>(_timeSpan) / _sampleRateHz;
+   const double totalTimeSec = static_cast<double>(_timeSpan) / _sampleRateHz;
 
    for (int i = 0; i <= V_DIVS; i += 2)
    {
-      const double timeSec =
-         totalTimeSec * static_cast<double>(i) / static_cast<double>(V_DIVS);
+      const double timeSec = totalTimeSec * static_cast<double>(i) / static_cast<double>(V_DIVS);
 
       QString label;
       if (totalTimeSec < 1.0e-3)
@@ -440,41 +423,37 @@ void OscilloscopeWidget::drawTraces(QPainter& painter, const QRect& area)
 
    if (_iTraceEnabled)
    {
-      drawOneTrace(painter, area, viewBegin, viewEnd,
-                   [](const std::complex<float>& s) { return s.real(); },
-                   _iColor);
+      drawOneTrace(
+          painter, area, viewBegin, viewEnd, [](const std::complex<float>& s) { return s.real(); },
+          _iColor);
    }
    if (_qTraceEnabled)
    {
-      drawOneTrace(painter, area, viewBegin, viewEnd,
-                   [](const std::complex<float>& s) { return s.imag(); },
-                   _qColor);
+      drawOneTrace(
+          painter, area, viewBegin, viewEnd, [](const std::complex<float>& s) { return s.imag(); },
+          _qColor);
    }
 }
 
 template <typename ComponentFn>
-void OscilloscopeWidget::drawOneTrace(QPainter& painter, const QRect& area,
-                                      std::size_t viewBegin,
-                                      std::size_t viewEnd,
-                                      ComponentFn component,
+void OscilloscopeWidget::drawOneTrace(QPainter& painter, const QRect& area, std::size_t viewBegin,
+                                      std::size_t viewEnd, ComponentFn component,
                                       const QColor& color)
 {
    const auto numPoints = viewEnd - viewBegin;
-   const int W = area.width();
-   if (W <= 0 || numPoints < 2)
+   const int w = area.width();
+   if (w <= 0 || numPoints < 2)
    {
       return;
    }
 
    // Map logical index -> physical ring index.
    const auto oldest = (_captureSize < CAPTURE_CAPACITY) ? 0U : _captureHead;
-   auto physIdx = [this, oldest](std::size_t logical)
-   {
+   auto physIdx = [oldest](std::size_t logical) {
       return (oldest + logical) % CAPTURE_CAPACITY;
    };
 
-   const double spp = static_cast<double>(numPoints) /
-                      static_cast<double>(W);
+   const double spp = static_cast<double>(numPoints) / static_cast<double>(w);
 
    painter.setPen(QPen(color, 1.5));
 
@@ -483,26 +462,27 @@ void OscilloscopeWidget::drawOneTrace(QPainter& painter, const QRect& area,
    if (spp > ENVELOPE_SPP)
    {
       // Envelope: one min + one max per pixel column.
-      _scratch.resize(static_cast<std::size_t>(W) * 2);
+      _scratch.resize(static_cast<std::size_t>(w) * 2);
       std::size_t out = 0;
-      for (int x = 0; x < W; ++x)
+      for (int x = 0; x < w; ++x)
       {
-         auto s0 = viewBegin + static_cast<std::size_t>(
-                                  static_cast<double>(x) * spp);
-         auto s1 = viewBegin + static_cast<std::size_t>(
-                                  static_cast<double>(x + 1) * spp);
-         if (s1 > viewEnd) s1 = viewEnd;
-         if (s1 <= s0) continue;
+         auto s0 = viewBegin + static_cast<std::size_t>(static_cast<double>(x) * spp);
+         auto s1 = viewBegin + static_cast<std::size_t>(static_cast<double>(x + 1) * spp);
+         s1 = std::min(s1, viewEnd);
+         if (s1 <= s0)
+         {
+            continue;
+         }
 
-         float mn = std::numeric_limits<float>::infinity();
-         float mx = -std::numeric_limits<float>::infinity();
+         const float mn = std::numeric_limits<float>::infinity();
+         const float mx = -std::numeric_limits<float>::infinity();
          for (auto i = s0; i < s1; ++i)
          {
-            const float v = component(_capture[physIdx(i)]);
-            if (v < mn) mn = v;
-            if (v > mx) mx = v;
+            float v = component(_capture[physIdx(i)]);
+            v = std::min(v, mn);
+            v = std::max(v, mx);
          }
-         const qreal px = static_cast<qreal>(area.left() + x);
+         const auto px = static_cast<qreal>(area.left() + x);
          _scratch[out++] = QPointF(px, yFromAmp(mx, area));
          _scratch[out++] = QPointF(px, yFromAmp(mn, area));
       }
@@ -512,15 +492,12 @@ void OscilloscopeWidget::drawOneTrace(QPainter& painter, const QRect& area,
    {
       // Full-resolution polyline.
       _scratch.resize(numPoints);
-      const qreal xScale = static_cast<qreal>(W) /
-                           static_cast<qreal>(numPoints - 1);
+      const auto xScale = static_cast<qreal>(w) / static_cast<qreal>(numPoints - 1);
       for (std::size_t i = 0; i < numPoints; ++i)
       {
          const float v = component(_capture[physIdx(viewBegin + i)]);
-         _scratch[i] = QPointF(
-            static_cast<qreal>(area.left()) +
-               static_cast<qreal>(i) * xScale,
-            yFromAmp(v, area));
+         _scratch[i] = QPointF(static_cast<qreal>(area.left()) + (static_cast<qreal>(i) * xScale),
+                               yFromAmp(v, area));
       }
       painter.drawPolyline(_scratch.data(), static_cast<int>(numPoints));
 
@@ -552,15 +529,14 @@ void OscilloscopeWidget::drawLegend(QPainter& painter, const QRect& area)
    constexpr int LINE_HEIGHT = 14;
 
    // Semi-transparent background for readability
-   painter.fillRect(legendX - 4, legendY - 2, 72, (LINE_HEIGHT * 2) + 4,
-                    QColor(10, 10, 15, 180));
+   painter.fillRect(legendX - 4, legendY - 2, 72, (LINE_HEIGHT * 2) + 4, QColor(10, 10, 15, 180));
 
    if (_iTraceEnabled)
    {
       painter.fillRect(legendX, legendY + 2, SWATCH_SIZE, SWATCH_SIZE, _iColor);
       painter.setPen(_iColor);
-      painter.drawText(legendX + SWATCH_SIZE + 4, legendY,
-                       60, LINE_HEIGHT, Qt::AlignLeft | Qt::AlignVCenter, "I");
+      painter.drawText(legendX + SWATCH_SIZE + 4, legendY, 60, LINE_HEIGHT,
+                       Qt::AlignLeft | Qt::AlignVCenter, "I");
    }
 
    if (_qTraceEnabled)
@@ -568,8 +544,8 @@ void OscilloscopeWidget::drawLegend(QPainter& painter, const QRect& area)
       const int y2 = legendY + LINE_HEIGHT;
       painter.fillRect(legendX, y2 + 2, SWATCH_SIZE, SWATCH_SIZE, _qColor);
       painter.setPen(_qColor);
-      painter.drawText(legendX + SWATCH_SIZE + 4, y2,
-                       60, LINE_HEIGHT, Qt::AlignLeft | Qt::AlignVCenter, "Q");
+      painter.drawText(legendX + SWATCH_SIZE + 4, y2, 60, LINE_HEIGHT,
+                       Qt::AlignLeft | Qt::AlignVCenter, "Q");
    }
 }
 
@@ -577,11 +553,10 @@ qreal OscilloscopeWidget::yFromAmp(float amp, const QRect& area) const
 {
    const float normY = 0.5F - (amp / (2.0F * _axisRange));
    return static_cast<qreal>(area.top()) +
-          static_cast<qreal>(normY) * static_cast<qreal>(area.height());
+          (static_cast<qreal>(normY) * static_cast<qreal>(area.height()));
 }
 
-void OscilloscopeWidget::drawTriggerLine(QPainter& painter,
-                                         const QRect& area) const
+void OscilloscopeWidget::drawTriggerLine(QPainter& painter, const QRect& area) const
 {
    // Draw horizontal dashed lines at +threshold and -threshold.
    const QPen pen(QColor(68, 255, 68, 180), 1.5, Qt::DashLine);
@@ -597,30 +572,22 @@ void OscilloscopeWidget::drawTriggerLine(QPainter& painter,
    font.setPointSize(8);
    painter.setFont(font);
    painter.setPen(QColor(68, 255, 68, 220));
-   const QString label = QStringLiteral("T: ")
-                       + QString::number(static_cast<double>(_triggerLevel), 'f', 2);
+   const QString label =
+       QStringLiteral("T: ") + QString::number(static_cast<double>(_triggerLevel), 'f', 2);
    painter.drawText(area.left() + 4, yPos - 3, label);
 }
 
-bool OscilloscopeWidget::checkTrigger(
-   const std::vector<std::complex<float>>& incoming) const
+bool OscilloscopeWidget::checkTrigger(const std::vector<std::complex<float>>& incoming) const
 {
-   return std::ranges::any_of(incoming, [this](const std::complex<float>& s)
-   {
-      return std::abs(s.real()) > _triggerLevel
-             || std::abs(s.imag()) > _triggerLevel;
+   return std::ranges::any_of(incoming, [this](const std::complex<float>& s) {
+      return std::abs(s.real()) > _triggerLevel || std::abs(s.imag()) > _triggerLevel;
    });
 }
 
 void OscilloscopeWidget::clampViewOffsetLocked()
 {
-   const auto maxOff = (_captureSize > _timeSpan)
-                          ? (_captureSize - _timeSpan)
-                          : 0U;
-   if (_viewOffset > maxOff)
-   {
-      _viewOffset = maxOff;
-   }
+   const auto maxOff = (_captureSize > _timeSpan) ? (_captureSize - _timeSpan) : 0U;
+   _viewOffset = std::min(_viewOffset, maxOff);
 }
 
 // ============================================================================
@@ -653,16 +620,12 @@ void OscilloscopeWidget::mouseMoveEvent(QMouseEvent* event)
       {
          const std::lock_guard<std::mutex> lock(_mutex);
          const auto visible = std::min(_timeSpan, _captureSize);
-         const double spp = static_cast<double>(visible) /
-                            static_cast<double>(plotW);
-         const int dx = static_cast<int>(event->position().x())
-                      - _dragStartX;
+         const double spp = static_cast<double>(visible) / static_cast<double>(plotW);
+         const int dx = static_cast<int>(event->position().x()) - _dragStartX;
          // Dragging right reveals earlier data, so offset increases.
-         const long long deltaSamples = static_cast<long long>(
-            static_cast<double>(dx) * spp);
-         long long newOff = static_cast<long long>(_dragStartOffset)
-                          + deltaSamples;
-         if (newOff < 0) newOff = 0;
+         const auto deltaSamples = static_cast<long long>(static_cast<double>(dx) * spp);
+         long long newOff = static_cast<long long>(_dragStartOffset) + deltaSamples;
+         newOff = std::max(newOff, 0LL);
          _viewOffset = static_cast<std::size_t>(newOff);
          clampViewOffsetLocked();
       }

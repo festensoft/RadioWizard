@@ -27,8 +27,8 @@ using IqCallback = std::function<void(const IqSample* samples, std::size_t numSa
  * @class ISdrDevice
  * @brief Abstract interface for a Software Defined Radio device.
  *
- * Implementations wrap a specific hardware API (e.g. librtlsdr) behind
- * a common surface so the rest of the application is device-agnostic.
+ * Implementations wrap a hardware API (e.g. SoapySDR) behind a common
+ * surface so the rest of the application is device-agnostic.
  */
 class ISdrDevice
 {

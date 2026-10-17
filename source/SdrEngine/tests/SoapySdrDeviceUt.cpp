@@ -1,9 +1,10 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <gtest/gtest.h>
 #include "SoapySdrDevice.h"
+
 #include <SdrEngine/SdrTypes.h>
+#include <gtest/gtest.h>
 
 #include <memory>
 
@@ -13,14 +14,14 @@
 
 TEST(SoapySdrDeviceTest, DefaultConstruction_NotOpen)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    EXPECT_FALSE(device.isOpen());
    EXPECT_FALSE(device.isStreaming());
 }
 
 TEST(SoapySdrDeviceTest, GetName_WhenNotOpen_ReturnsDefault)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    EXPECT_EQ(device.getName(), "SoapySDR (not open)");
 }
 
@@ -36,7 +37,7 @@ TEST(SoapySdrDeviceTest, SetCenterFrequency_WhenNotOpen_ReturnsFalse)
 
 TEST(SoapySdrDeviceTest, GetCenterFrequency_WhenNotOpen_ReturnsZero)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    EXPECT_EQ(device.getCenterFrequency(), 0u);
 }
 
@@ -48,7 +49,7 @@ TEST(SoapySdrDeviceTest, SetSampleRate_WhenNotOpen_ReturnsFalse)
 
 TEST(SoapySdrDeviceTest, GetSampleRate_WhenNotOpen_ReturnsZero)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    EXPECT_EQ(device.getSampleRate(), 0u);
 }
 
@@ -66,13 +67,13 @@ TEST(SoapySdrDeviceTest, SetGain_WhenNotOpen_ReturnsFalse)
 
 TEST(SoapySdrDeviceTest, GetGain_WhenNotOpen_ReturnsZero)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    EXPECT_EQ(device.getGain(), 0);
 }
 
 TEST(SoapySdrDeviceTest, GetGainValues_WhenNotOpen_ReturnsEmpty)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    EXPECT_TRUE(device.getGainValues().empty());
 }
 
@@ -88,7 +89,7 @@ TEST(SoapySdrDeviceTest, StartStreaming_WhenNotOpen_ReturnsFalse)
 
 TEST(SoapySdrDeviceTest, EnumerateDevices_DoesNotCrash)
 {
-   SdrEngine::SoapySdrDevice device;
+   const SdrEngine::SoapySdrDevice device;
    // Should not crash regardless of whether hardware is present.
    const auto devices = device.enumerateDevices();
    static_cast<void>(devices);
@@ -119,7 +120,7 @@ TEST(SoapySdrDeviceTest, StopStreaming_WhenNotStreaming_DoesNotCrash)
 TEST(SoapySdrDeviceTest, CanBeUsedAsSdrDevice)
 {
    auto device = std::make_unique<SdrEngine::SoapySdrDevice>();
-   SdrEngine::ISdrDevice* iface = device.get();
+   const SdrEngine::ISdrDevice* iface = device.get();
    EXPECT_FALSE(iface->isOpen());
    EXPECT_EQ(iface->getName(), "SoapySDR (not open)");
 }

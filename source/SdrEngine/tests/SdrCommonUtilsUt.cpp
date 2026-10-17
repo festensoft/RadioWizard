@@ -1,8 +1,8 @@
 // Copyright 2026 Steven Festenstein
 // SPDX-License-Identifier: BSL-1.0
 
-#include <gtest/gtest.h>
 #include <SdrEngine/SdrEngine.h>
+#include <gtest/gtest.h>
 
 #include <cstddef>
 #include <numeric>
@@ -45,8 +45,8 @@ TEST(SdrCommonUtilsTest, DecimateSpectrum_NonDivisible_HandlesRemainder)
    const std::vector<float> input = {1.0F, 2.0F, 3.0F, 4.0F, 5.0F};
    auto result = SdrEngine::decimateSpectrum(input, 2);
    ASSERT_EQ(result.size(), 2u);
-   EXPECT_FLOAT_EQ(result[0], 3.0F);   // max(1, 2, 3)
-   EXPECT_FLOAT_EQ(result[1], 5.0F);   // max(4, 5)
+   EXPECT_FLOAT_EQ(result[0], 3.0F); // max(1, 2, 3)
+   EXPECT_FLOAT_EQ(result[1], 5.0F); // max(4, 5)
 }
 
 TEST(SdrCommonUtilsTest, DecimateSpectrum_LargeInput_OutputIsMaxBins)
@@ -78,7 +78,7 @@ TEST(SdrCommonUtilsTest, DecimateSpectrum_MaxBinsZero_ReturnsOriginal)
 TEST(SdrCommonUtilsTest, DecimateSpectrum_DefaultMaxBins_Is2048)
 {
    // Verify the default parameter works.
-   std::vector<float> input(4096, -50.0F);
+   const std::vector<float> input(4096, -50.0F);
    auto result = SdrEngine::decimateSpectrum(input);
    EXPECT_EQ(result.size(), 2048u);
 }
@@ -88,9 +88,9 @@ TEST(SdrCommonUtilsTest, DecimateSpectrum_PreservesMaxInEachGroup)
    // 6 bins → 3 bins: groups of 2.
    // Each group should return the maximum value.
    const std::vector<float> input = {
-      -80.0F, -20.0F,   // group 0 → -20
-      -60.0F, -40.0F,   // group 1 → -40
-      -10.0F, -90.0F    // group 2 → -10
+       -80.0F, -20.0F, // group 0 → -20
+       -60.0F, -40.0F, // group 1 → -40
+       -10.0F, -90.0F  // group 2 → -10
    };
    auto result = SdrEngine::decimateSpectrum(input, 3);
    ASSERT_EQ(result.size(), 3u);

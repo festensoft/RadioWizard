@@ -74,7 +74,7 @@ public:
    // -- Device management ---------------------------------------------------
 
    /**
-    * @brief Set the concrete SDR device to use (e.g. RtlSdrDevice).
+    * @brief Set the concrete SDR device to use (e.g. from createSoapyDevice()).
     * Must be called before start().
     */
    void setDevice(std::unique_ptr<ISdrDevice> device);
