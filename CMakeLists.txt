@@ -112,7 +112,7 @@ set(COMMONUTILS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(CommonUtils
    GIT_REPOSITORY https://github.com/festensoft/CommonUtils.git
-   GIT_TAG        v1.0.0
+   GIT_TAG        v1.0.1
    GIT_SHALLOW    TRUE
    SYSTEM
    EXCLUDE_FROM_ALL
