@@ -1,0 +1,34 @@
+CompileFlags:
+  # Point clangd to the compilation database in the build directory
+  CompilationDatabase: build/debug
+
+  # Add additional compiler flags for better diagnostics
+  Add:
+    - -Wno-pragma-once-outside-header
+    - -Wno-unknown-warning-option
+    - -Wno-missing-includes
+  
+  # Remove problematic flags that clangd doesn't understand well
+  Remove:
+    - -arch
+    - arm64
+    - -mmacosx-version-min*
+    - -isysroot
+
+Diagnostics:
+  # Suppress warnings in Conan/Qt system headers
+  UnusedIncludes: Strict
+  MissingIncludes: None
+  
+Index:
+  # Index all project files including headers
+  Background: Build
+  
+InlayHints:
+  # Show parameter names and types inline
+  Enabled: No
+  ParameterNames: No
+  DeducedTypes: No 
+
+Hover:
+  ShowAKA: No

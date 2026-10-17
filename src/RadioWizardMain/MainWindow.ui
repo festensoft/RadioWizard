@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1400</width>
+    <height>855</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>RadioWizard</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Orientation::Vertical</enum>
+      </property>
+      <property name="handleWidth">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="widget" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QSplitter" name="splitter_2">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="handleWidth">
+           <number>2</number>
+          </property>
+          <widget class="QWidget" name="widget_3" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QSplitter" name="splitter_3">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="handleWidth">
+               <number>2</number>
+              </property>
+              <widget class="RealTimeGraphs::SpectrumWidget" name="_spectrurmWidget" native="true"/>
+              <widget class="RealTimeGraphs::WaterfallWidget" name="_waterfallWidget" native="true"/>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="widget_4" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>220</width>
+             <height>0</height>
+            </size>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <property name="leftMargin">
+             <number>8</number>
+            </property>
+            <property name="topMargin">
+             <number>8</number>
+            </property>
+            <property name="rightMargin">
+             <number>8</number>
+            </property>
+            <property name="bottomMargin">
+             <number>8</number>
+            </property>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="_autoGainCheckBox">
+              <property name="text">
+               <string>Auto Gain</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0" colspan="2">
+             <widget class="QSlider" name="_gainSlider">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>496</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QPushButton" name="_startStopButton">
+              <property name="text">
+               <string>Start</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="1">
+             <widget class="QLabel" name="_fftAverageValueLabel">
+              <property name="text">
+               <string>0.0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QComboBox" name="_sampleRateCombo"/>
+            </item>
+            <item row="13" column="0">
+             <widget class="QLabel" name="fftAverageLabel">
+              <property name="text">
+               <string>FFT Averaging</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="gainLabel">
+              <property name="text">
+               <string>Gain</string>
+              </property>
+             </widget>
+            </item>
+            <item row="18" column="1">
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="12" column="0">
+             <widget class="QLabel" name="windowLabel">
+              <property name="text">
+               <string>Window</string>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="0" colspan="2">
+             <widget class="QCheckBox" name="_dcSpikeRemovalCheckBox">
+              <property name="text">
+               <string>Remove DC Spike</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="sampleRateLabel">
+              <property name="text">
+               <string>Sample Rate</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="1">
+             <widget class="QComboBox" name="_windowFuncCombo">
+              <item>
+               <property name="text">
+                <string>Blackman-Harris</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Hanning</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Flat-Top</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Rectangular</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="16" column="0">
+             <widget class="QCheckBox" name="_maxHoldCheckBox">
+              <property name="text">
+               <string>MaxHold</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="1">
+             <widget class="QPushButton" name="_bwCursorButton">
+              <property name="text">
+               <string>BW Cursor</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="0">
+             <widget class="QPushButton" name="_demodButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Demod</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="1">
+             <widget class="QComboBox" name="_demodModeCombo">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <item>
+               <property name="text">
+                <string>FM Mono</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>FM Stereo</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>AM</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="11" column="0">
+             <widget class="QLabel" name="fftSizeLabel">
+              <property name="text">
+               <string>FFT Size</string>
+              </property>
+             </widget>
+            </item>
+            <item row="18" column="0">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="11" column="1">
+             <widget class="QComboBox" name="_fftSizeCombo"/>
+            </item>
+            <item row="8" column="1">
+             <widget class="QLabel" name="_gainValueLabel">
+              <property name="text">
+               <string>Auto</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="19" column="1">
+             <widget class="QComboBox" name="_colorThemeCombo"/>
+            </item>
+            <item row="19" column="0">
+             <widget class="QPushButton" name="_autoScaleBtn">
+              <property name="text">
+               <string>Auto Scale</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="0" colspan="2">
+             <widget class="QSlider" name="_fftAverageSlider">
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="value">
+               <number>33</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="FrequencyInputWidget" name="_centerFreqSpinBox" native="true"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="widget_2" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,3,2">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="_constellationContainer" native="true">
+          <layout class="QHBoxLayout" name="_constellationContainerLayout" stretch="1,0">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <item>
+            <widget class="RealTimeGraphs::ConstellationWidget" name="_constellationWidget" native="true"/>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="_constellationFadeLayout">
+             <item>
+              <widget class="QLabel" name="_constellationFadeLabel">
+               <property name="text">
+                <string>Fade
+5.0 s</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">QLabel { color: #B4B4BE; font-size: 9pt; }</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>24</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>24</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSlider" name="_constellationFadeSlider">
+               <property name="minimum">
+                <number>5</number>
+               </property>
+               <property name="maximum">
+                <number>300</number>
+               </property>
+               <property name="value">
+                <number>50</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="toolTip">
+                <string>Persistence fade time
+0.5 s (bottom) – 30 s (top)</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>24</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="RealTimeGraphs::SpectrumWidget" name="_detailedSpectrumWidget" native="true"/>
+        </item>
+        <item>
+         <widget class="RealTimeGraphs::OscilloscopeWidget" name="_oscilloscopeWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1400</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RealTimeGraphs::SpectrumWidget</class>
+   <extends>QWidget</extends>
+   <header>SpectrumWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RealTimeGraphs::WaterfallWidget</class>
+   <extends>QWidget</extends>
+   <header>WaterfallWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RealTimeGraphs::ConstellationWidget</class>
+   <extends>QWidget</extends>
+   <header>ConstellationWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RealTimeGraphs::OscilloscopeWidget</class>
+   <extends>QWidget</extends>
+   <header>OscilloscopeWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FrequencyInputWidget</class>
+   <extends>QWidget</extends>
+   <header>FrequencyInputWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
