@@ -1,8 +1,10 @@
 # =============================================================================
-# RadioWizard CI/CD Pipeline
+# RadioWizard CI — same CMake workflow presets as local development
 # =============================================================================
-# Triggers on push to main branch
-# Builds and tests on Linux (GCC) and macOS (Clang)
+# Jobs map 1:1 to cmake --workflow --preset <name>:
+#   debug-asan  — Debug + ASan/UBSan + ctest  (primary quality gate)
+#   release     — optimized build
+# Local-only for now: debug-tsan, debug-clang-tidy
 # =============================================================================
 
 name: CI
@@ -13,33 +15,47 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  BUILD_TYPE: Debug
-
 jobs:
   # ===========================================================================
-  # Linux Build (Ubuntu with GCC)
+  # Debug + ASan/UBSan + tests
   # ===========================================================================
-  linux-build:
-    name: Linux (GCC)
-    runs-on: ubuntu-latest
+  debug-asan:
+    name: debug-asan (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cppstd: gnu20
+          - os: macos-latest
+            cppstd: 20
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install CMake 4.1+
+        if: runner.os == 'Linux'
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.1.x'
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
-            cmake \
             ninja-build \
             python3-pip \
-            lcov \
             libsoapysdr-dev \
             libgl-dev \
             xkb-data
+
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install cmake ninja soapysdr
 
       - name: Install Conan
         run: |
@@ -60,49 +76,53 @@ jobs:
             --output-folder=build \
             --build=missing \
             -s build_type=Release \
-            -s compiler.cppstd=gnu20 \
+            -s compiler.cppstd=${{ matrix.cppstd }} \
             -c tools.system.package_manager:mode=install \
             -c tools.system.package_manager:sudo=True
 
-      - name: Configure CMake
-        run: cmake --preset ci-linux
-
-      - name: Build
-        run: cmake --build --preset ci-linux
-
-      - name: Run tests
-        run: ctest --preset ci-linux
-
-      - name: Generate coverage report
-        run: |
-          cd build/ci-linux
-          LCOV_IGNORE="--ignore-errors inconsistent,mismatch,unused,negative"
-          lcov --capture --directory . --output-file coverage.info --gcov-tool gcov $LCOV_IGNORE
-          lcov --remove coverage.info '/usr/*' '*/build/*' '*/tests/*' --output-file coverage.info $LCOV_IGNORE
-          lcov --list coverage.info $LCOV_IGNORE
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: build/ci-linux/coverage.info
-          fail_ci_if_error: false
-          verbose: true
-        continue-on-error: true
+      - name: Configure, build, and test (debug-asan)
+        run: cmake --workflow --preset debug-asan
 
   # ===========================================================================
-  # macOS Build (Clang)
+  # Release build
   # ===========================================================================
-  macos-build:
-    name: macOS (Clang)
-    runs-on: macos-latest
+  release:
+    name: release (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cppstd: gnu20
+          - os: macos-latest
+            cppstd: 20
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install CMake 4.1+
+        if: runner.os == 'Linux'
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.1.x'
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
-          brew install cmake ninja soapysdr
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ninja-build \
+            python3-pip \
+            libsoapysdr-dev \
+            libgl-dev \
+            xkb-data
+
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install cmake ninja soapysdr
 
       - name: Install Conan
         run: |
@@ -123,18 +143,9 @@ jobs:
             --output-folder=build \
             --build=missing \
             -s build_type=Release \
-            -s compiler.cppstd=20 \
+            -s compiler.cppstd=${{ matrix.cppstd }} \
             -c tools.system.package_manager:mode=install \
             -c tools.system.package_manager:sudo=True
 
-      - name: Configure CMake
-        run: cmake --preset ci-macos
-
-      - name: Build
-        run: cmake --build --preset ci-macos
-
-# Note: Tests are currently disabled on macOS due to issues with the CI environment
-#       and the need for further investigation to ensure reliable test execution.
-#      - name: Run tests
-#        run: ctest --preset ci-macos
-
+      - name: Configure and build (release)
+        run: cmake --workflow --preset release

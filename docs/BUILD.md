@@ -1,239 +1,120 @@
 # Build Guide
 
-This document provides detailed instructions for building the RadioWizard project — a C++20 application for Software Defined Radio control, spectrum and I/Q data observation, signal isolation, and signal demodulation.
+Detailed instructions for building RadioWizard.
 
 ## Prerequisites
 
-### All Platforms
+### All platforms
 
-- **CMake 3.25+**: [Download](https://cmake.org/download/)
-- **Python 3.8+**: For Conan package manager
+- **CMake 4.1+**
+- **Python 3.8+** (for Conan)
 - **Conan 2.0+**: `pip install conan`
-- **Ninja** (recommended): [Download](https://ninja-build.org/)
+- **Ninja** (recommended)
 
 ### Linux (Ubuntu/Debian)
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y \
-   build-essential \
-   cmake \
-   ninja-build \
-   python3-pip \
-   lcov
-
-# Qt 6 requires OpenGL, X11 and XCB development headers
-sudo apt-get install -y \
-   libgl-dev \
-   libx11-xcb-dev \
-   libfontenc-dev \
-   libxkbfile-dev \
-   libxcb-cursor-dev \
-   libxcb-icccm4-dev \
-   libxcb-keysyms1-dev \
-   libxcb-shape0-dev \
-   libxcb-xkb-dev \
-   libxrender-dev
-
-# RTL-SDR, Pluto SDR, etc. via SoapySDR abstraction layer
-sudo apt-get install -y libsoapysdr-dev
-
-# Install SoapySDR modules for your hardware (optional)
-# sudo apt-get install -y soapysdr-module-rtlsdr soapysdr-module-plutosdr
+   build-essential cmake ninja-build python3-pip lcov \
+   libgl-dev libx11-xcb-dev libfontenc-dev libxkbfile-dev \
+   libxcb-cursor-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
+   libxcb-shape0-dev libxcb-xkb-dev libxrender-dev \
+   libsoapysdr-dev
 
 pip3 install conan
+```
+
+Optional SoapySDR modules for your hardware:
+
+```bash
+# sudo apt-get install -y soapysdr-module-rtlsdr soapysdr-module-plutosdr
 ```
 
 ### macOS
 
 ```bash
-# Install Xcode command line tools
 xcode-select --install
-
-# Install Homebrew packages
-brew install cmake ninja python lcov
-
-# SDR hardware via SoapySDR abstraction layer
-brew install soapysdr
-
-# Install SoapySDR modules for your hardware (optional)
-# brew install soapyrtlsdr soapyplutosdr
-
+brew install cmake ninja python lcov soapysdr
 pip3 install conan
 ```
 
-## Initial Setup
-
-### 1. Configure Conan Profile
-
-First-time setup - detect your compiler:
+## Setup
 
 ```bash
 conan profile detect --force
+
+conan install . --output-folder=build --build=missing \
+  -s build_type=Release -s compiler.cppstd=gnu20
 ```
 
-This creates a default profile at `~/.conan2/profiles/default`.
+> Use `gnu20` (not `20`) for `compiler.cppstd` on Linux — Qt 6 needs GNU
+> extensions such as `__int128`. On macOS, `20` is typically fine.
 
-### 2. Verify Profile
+If `conan install` fails building `openal-soft` with GCC 15, this project
+already disables OpenAL in Qt (`with_openal = False`) since RadioWizard does
+not use it.
+
+## Configure, build, test
+
+Prefer workflow presets (configure + build + test in one step). CI runs the
+same commands:
 
 ```bash
-conan profile show
+cmake --workflow --preset debug          # plain Debug + tests
+cmake --workflow --preset debug-asan     # Debug + ASan/UBSan + tests (CI)
+cmake --workflow --preset release        # Release build
+cmake --workflow --preset debug-tsan     # TSan (local; Clang)
+cmake --workflow --preset debug-clang-tidy  # clang-tidy (local; Clang)
 ```
 
-## Build Configurations
+| Preset | Build type | Tests | Sanitizers | Clang-Tidy | CI |
+|--------|------------|-------|------------|------------|----|
+| `debug` | Debug | ✅ | — | — | — |
+| `debug-asan` | Debug | ✅ | ASan + UBSan | — | ✅ |
+| `debug-tsan` | Debug | ✅ | TSan (Clang) | — | — |
+| `debug-clang-tidy` | Debug | ✅ | — | ✅ (Clang) | — |
+| `release` | Release | — | — | — | ✅ |
 
-### Debug Build (Recommended for Development)
+ASan/UBSan and TSan are separate presets and must not be combined.
 
-```bash
-# Install all configurations to unified build folder
-conan install . --output-folder=build --build=missing -s build_type=Release -s compiler.cppstd=20
+### Compilers on macOS
 
-# Configure and Build Debug
-cmake --preset debug
-cmake --build --preset debug
+macOS has **two** Clang toolchains people commonly hit:
 
-# Test
-ctest --preset debug
-```
+| Toolchain | Typical path | CMake id |
+|-----------|--------------|----------|
+| **Apple Clang** (Xcode) | `/usr/bin/clang++` | `AppleClang` |
+| **Homebrew LLVM** | `/opt/homebrew/opt/llvm/bin/clang++` | `Clang` |
 
-> **Note:** The first build can take 20–60+ minutes as Conan compiles Qt 6 and its
-> transitive dependencies from source. Subsequent builds use the Conan cache.
+Presets do **not** set `CMAKE_CXX_COMPILER=clang++` on macOS. That bare name often resolves to Homebrew LLVM, which then fights the Xcode SDK (`-isysroot`) and breaks in libc++ (`NAN` / `INFINITY` undeclared). Use the default AppleClang toolchain. A hidden `linux-clang` preset exists if you want to force Clang on Linux only — do not inherit it into macOS presets (CMake disables a preset that inherits a false-conditioned parent).
 
-### Release Build
-
-```bash
-# Configure and Build Release
-cmake --preset release
-cmake --build --preset release
-```
-
-### Coverage Build
+## Run
 
 ```bash
-# Configure with coverage
-cmake --preset coverage
-cmake --build --preset coverage
-
-# Run tests and generate coverage (per-library targets)
-ctest --preset coverage
-cmake --build --preset coverage --target CommonUtilsCoverage
-cmake --build --preset coverage --target PubSubCoverage
-cmake --build --preset coverage --target Vita49_2Coverage
-
-# View report
-# Open build/coverage/CommonUtilsCoverage/index.html
-```
-
-## Build Options
-
-### CMake Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `BUILD_TESTS` | ON | Build unit tests |
-| `ENABLE_COVERAGE` | OFF | Enable code coverage instrumentation |
-| `ENABLE_SANITIZERS` | OFF | Enable ASan and UBSan |
-| `ENABLE_CLANG_TIDY` | OFF | Run clang-tidy during build |
-
-### Conan Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `shared` | False | Build shared libraries |
-| `fPIC` | True | Position independent code |
-| `build_tests` | True | Install test dependencies |
-| `enable_coverage` | False | Pass to CMake |
-| `enable_sanitizers` | False | Pass to CMake |
-
-## Manual Build (Without Presets)
-
-If CMake presets don't work in your environment:
-
-```bash
-# Create build directory
-mkdir -p build/manual
-cd build/manual
-
-# Install Conan dependencies
-conan install ../.. --output-folder=. --build=missing -s build_type=Debug
-
-# Configure
-cmake ../.. \
-   -G "Ninja" \
-   -DCMAKE_BUILD_TYPE=Debug \
-   -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-   -DBUILD_TESTS=ON
-
-# Build
-cmake --build .
-
-# Test
-ctest --output-on-failure
-```
-
-## Running Applications
-
-After building:
-
-```bash
-# Main RadioWizard application (Qt GUI with SDR engine)
 ./build/debug/bin/RadioWizardMain
-
-# High-bandwidth UDP multicast pub/sub
-./build/debug/bin/HighBandwidthSubscriber   # In terminal 1
-./build/debug/bin/HighBandwidthPublisher    # In terminal 2
-
-# RealTimeGraphs interactive test
-./build/debug/bin/RealTimeGraphsTest
-
-# VITA 49 utilities
-./build/debug/bin/Vita49FileCodec
-./build/debug/bin/Vita49PerfBenchmark
-./build/debug/bin/Vita49RoundTripTest
+# or, after debug-asan:
+./build/debug-asan/bin/RadioWizardMain
 ```
 
-## Troubleshooting
+## Dependencies
 
-```bash
-# Update Conan remote index
-conan remote update conancenter --url https://center.conan.io
+| Package | Source | Purpose |
+|---------|--------|---------|
+| festensoft/CommonUtils v1.0.0 | FetchContent | Logging, DataHandler, CircularBuffer, StackTrace |
+| spdlog | via CommonUtils | Logging backend (private) |
+| fftw | Conan | FFT (SdrEngine) |
+| liquid-dsp | Conan | Filters, NCO, resampling, demod |
+| qt | Conan | GUI (RealTimeGraphs, RadioWizardMain) |
+| gtest | Conan (tests) | Unit tests |
+| SoapySDR | System | SDR hardware abstraction |
 
-# Clear Conan cache and rebuild
-conan remove "*" -c
-conan install . --output-folder=build/debug --build=missing
-```
+## CMake options
 
-### CMake Can't Find Conan Packages
+| Option | Default | Description |
+|--------|---------|-------------|
+| `BUILD_TESTS` | OFF | Build unit tests (debug presets turn this on) |
+| `ENABLE_CLANG_TIDY` | OFF | clang-tidy during the build (`debug-clang-tidy`) |
 
-Ensure you're using the toolchain file:
-```bash
-cmake -DCMAKE_TOOLCHAIN_FILE=build/debug/conan_toolchain.cmake ...
-```
-
-### Protobuf Compiler Not Found
-
-Conan should provide protoc. If not found:
-```bash
-# Check Conan installed protobuf
-conan list "protobuf/*"
-
-# Manually specify path
-cmake -DProtobuf_PROTOC_EXECUTABLE=/path/to/protoc ...
-```
-
-### Qt / RealTimeGraphs Build Issues
-
-If CMake fails with `Could not find a package configuration file provided by "Qt6"`:
-- Ensure `conan install` completed successfully — Qt 6 is a required dependency and
-  its packages must be available for the CMake configure step.
-
-If the Qt Conan build itself fails:
-- Qt 6 requires OpenGL development headers on your system. On Linux:
-  ```bash
-  sudo apt-get install -y libgl-dev libx11-xcb-dev libfontenc-dev \
-     libxkbfile-dev libxcb-cursor-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
-     libxcb-shape0-dev libxcb-xkb-dev libxrender-dev
-  ```
-- On macOS, Xcode command-line tools provide the required OpenGL frameworks.
-- The first build of Qt from source takes a long time (20–60+ minutes). Subsequent
-  builds use the Conan binary cache.
+Sanitizer flags come from presets (`CMAKE_CXX_FLAGS` / linker flags), not
+CMake options.

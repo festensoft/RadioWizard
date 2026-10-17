@@ -1,185 +1,182 @@
 {
    "version": 6,
    "cmakeMinimumRequired": {
-      "major": 3,
-      "minor": 25,
+      "major": 4,
+      "minor": 1,
       "patch": 0
    },
    "configurePresets": [
       {
-         "name": "conan-default",
+         "name": "base",
          "hidden": true,
-         "binaryDir": "${sourceDir}/build/${presetName}",
          "generator": "Ninja",
+         "binaryDir": "${sourceDir}/build/${presetName}",
+         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
          "cacheVariables": {
-            "CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
+            "CMAKE_POLICY_DEFAULT_CMP0091": "NEW",
+            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
          }
       },
       {
-         "name": "debug-clang-tidy",
-         "displayName": "Debug with Clang-Tidy",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
+         "name": "debug-type",
+         "hidden": true,
+         "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug",
+            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
+            "BUILD_TESTS": "ON"
+         }
+      },
+      {
+         "name": "release-type",
+         "hidden": true,
+         "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Release",
+            "BUILD_TESTS": "OFF"
+         }
+      },
+      {
+         "name": "linux-clang",
+         "hidden": true,
+         "description": "Force Clang on Linux only. On macOS the default is already AppleClang (/usr/bin/clang++); setting bare 'clang++' often picks Homebrew LLVM and breaks against the Xcode SDK (NAN/INFINITY errors in libc++).",
+         "condition": {
+            "type": "equals",
+            "lhs": "${hostSystemName}",
+            "rhs": "Linux"
+         },
+         "cacheVariables": {
+            "CMAKE_C_COMPILER": "clang",
+            "CMAKE_CXX_COMPILER": "clang++"
+         }
+      },
+      {
+         "name": "asan-ubsan-flags",
+         "hidden": true,
+         "description": "Not combinable with tsan-flags — sanitizers are mutually exclusive.",
          "environment": {
             "LSAN_OPTIONS": "suppressions=${sourceDir}/sanitizer_suppressions/lsan_suppressions.txt"
          },
          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
-            "BUILD_TESTS": "ON",
-            "ENABLE_SANITIZERS": "ON",
-            "ENABLE_CLANG_TIDY": "ON"
+            "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer",
+            "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined",
+            "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=address,undefined",
+            "CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE": "PRE_TEST"
+         }
+      },
+      {
+         "name": "tsan-flags",
+         "hidden": true,
+         "cacheVariables": {
+            "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
+            "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
+            "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=thread",
+            "CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE": "PRE_TEST"
          }
       },
       {
          "name": "debug",
          "displayName": "Debug",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
-         "environment": {
-            "LSAN_OPTIONS": "suppressions=${sourceDir}/sanitizer_suppressions/lsan_suppressions.txt"
-         },
+         "description": "Plain Debug build with tests. Fast local iteration.",
+         "inherits": ["base", "debug-type"]
+      },
+      {
+         "name": "debug-asan",
+         "displayName": "Debug + ASan/UBSan",
+         "description": "Debug with AddressSanitizer and UndefinedBehaviorSanitizer. CI test lane.",
+         "inherits": ["base", "debug-type", "asan-ubsan-flags"]
+      },
+      {
+         "name": "debug-tsan",
+         "displayName": "Debug + TSan",
+         "description": "Debug with ThreadSanitizer. Uses the default compiler (AppleClang on macOS). Optional: inherit linux-clang on Linux. Local only for now.",
+         "inherits": ["base", "debug-type", "tsan-flags"]
+      },
+      {
+         "name": "debug-clang-tidy",
+         "displayName": "Debug + clang-tidy",
+         "description": "Debug build that runs clang-tidy on project sources. Uses the default compiler (AppleClang on macOS). Do not force bare clang++ on macOS — it often picks Homebrew LLVM and breaks against the Xcode SDK. Local only for now.",
+         "inherits": ["base", "debug-type"],
          "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
-            "BUILD_TESTS": "ON",
-            "ENABLE_SANITIZERS": "ON",
-            "ENABLE_CLANG_TIDY": "OFF"
+            "ENABLE_CLANG_TIDY": "ON"
          }
       },
       {
          "name": "release",
          "displayName": "Release",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
-         "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Release",
-            "BUILD_TESTS": "OFF",
-            "ENABLE_SANITIZERS": "OFF"
-         }
-      },
-      {
-         "name": "relwithdebinfo",
-         "displayName": "Release with Debug Info",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
-         "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-            "CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO": "Release",
-            "BUILD_TESTS": "ON",
-            "ENABLE_SANITIZERS": "OFF",
-            "ENABLE_CLANG_TIDY": "OFF"
-         }
-      },
-      {
-         "name": "coverage",
-         "displayName": "Coverage",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
-         "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
-            "BUILD_TESTS": "ON",
-            "ENABLE_COVERAGE": "ON",
-            "ENABLE_CLANG_TIDY": "ON"
-         }
-      },
-      {
-         "name": "ci-linux",
-         "displayName": "CI Linux",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
-         "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
-            "BUILD_TESTS": "ON",
-            "ENABLE_COVERAGE": "ON",
-            "ENABLE_SANITIZERS": "OFF"
-         }
-      },
-      {
-         "name": "ci-macos",
-         "displayName": "CI macOS",
-         "inherits": "conan-default",
-         "toolchainFile": "${sourceDir}/build/build/Release/generators/conan_toolchain.cmake",
-         "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
-            "BUILD_TESTS": "ON",
-            "ENABLE_COVERAGE": "OFF",
-            "ENABLE_SANITIZERS": "OFF"
-         }
+         "description": "Optimized build without tests.",
+         "inherits": ["base", "release-type"]
       }
    ],
    "buildPresets": [
-      {
-         "name": "debug",
-         "configurePreset": "debug"
-      },
-      {
-         "name": "release",
-         "configurePreset": "release"
-      },
-      {
-         "name": "relwithdebinfo",
-         "configurePreset": "relwithdebinfo"
-      },
-      {
-         "name": "coverage",
-         "configurePreset": "coverage"
-      },
-      {
-         "name": "ci-linux",
-         "configurePreset": "ci-linux"
-      },
-      {
-         "name": "ci-macos",
-         "configurePreset": "ci-macos"
-      }
+      { "name": "debug", "configurePreset": "debug" },
+      { "name": "debug-asan", "configurePreset": "debug-asan" },
+      { "name": "debug-tsan", "configurePreset": "debug-tsan" },
+      { "name": "debug-clang-tidy", "configurePreset": "debug-clang-tidy" },
+      { "name": "release", "configurePreset": "release" }
    ],
    "testPresets": [
       {
+         "name": "base",
+         "hidden": true,
+         "output": { "outputOnFailure": true },
+         "execution": { "noTestsAction": "error" }
+      },
+      {
          "name": "debug",
-         "configurePreset": "debug",
+         "inherits": "base",
+         "configurePreset": "debug"
+      },
+      {
+         "name": "debug-asan",
+         "inherits": "base",
+         "configurePreset": "debug-asan",
          "environment": {
             "LSAN_OPTIONS": "suppressions=${sourceDir}/sanitizer_suppressions/lsan_suppressions.txt"
-         },
-         "output": {
-            "outputOnFailure": true,
-            "verbosity": "default"
          }
       },
       {
-         "name": "relwithdebinfo",
-         "configurePreset": "relwithdebinfo",
-         "output": {
-            "outputOnFailure": true,
-            "verbosity": "default"
-         }
+         "name": "debug-tsan",
+         "inherits": "base",
+         "configurePreset": "debug-tsan"
+      }
+   ],
+   "workflowPresets": [
+      {
+         "name": "debug",
+         "steps": [
+            { "type": "configure", "name": "debug" },
+            { "type": "build", "name": "debug" },
+            { "type": "test", "name": "debug" }
+         ]
       },
       {
-         "name": "coverage",
-         "configurePreset": "coverage",
-         "output": {
-            "outputOnFailure": true,
-            "verbosity": "default"
-         }
+         "name": "debug-asan",
+         "steps": [
+            { "type": "configure", "name": "debug-asan" },
+            { "type": "build", "name": "debug-asan" },
+            { "type": "test", "name": "debug-asan" }
+         ]
       },
       {
-         "name": "ci-linux",
-         "configurePreset": "ci-linux",
-         "output": {
-            "outputOnFailure": true,
-            "verbosity": "default"
-         }
+         "name": "debug-tsan",
+         "steps": [
+            { "type": "configure", "name": "debug-tsan" },
+            { "type": "build", "name": "debug-tsan" },
+            { "type": "test", "name": "debug-tsan" }
+         ]
       },
       {
-         "name": "ci-macos",
-         "configurePreset": "ci-macos",
-         "output": {
-            "outputOnFailure": true,
-            "verbosity": "default"
-         }
+         "name": "debug-clang-tidy",
+         "steps": [
+            { "type": "configure", "name": "debug-clang-tidy" },
+            { "type": "build", "name": "debug-clang-tidy" }
+         ]
+      },
+      {
+         "name": "release",
+         "steps": [
+            { "type": "configure", "name": "release" },
+            { "type": "build", "name": "release" }
+         ]
       }
    ]
 }
