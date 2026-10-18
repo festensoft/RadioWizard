@@ -17,6 +17,7 @@ qt_add_executable(RadioWizardMain
    src/AudioOutput.h
    src/FrequencyInputWidget.cpp
    src/FrequencyInputWidget.h
+   resources/fonts.qrc
 )
 
 target_include_directories(RadioWizardMain PRIVATE

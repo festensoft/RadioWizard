@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource prefix="/fonts">
+      <file alias="Roboto-Regular.ttf">fonts/Roboto-Regular.ttf</file>
+      <file alias="Roboto-Bold.ttf">fonts/Roboto-Bold.ttf</file>
+      <file alias="RobotoMono-Regular.ttf">fonts/RobotoMono-Regular.ttf</file>
+      <file alias="RobotoMono-Medium.ttf">fonts/RobotoMono-Medium.ttf</file>
+      <file alias="RobotoMono-Bold.ttf">fonts/RobotoMono-Bold.ttf</file>
+   </qresource>
+</RCC>

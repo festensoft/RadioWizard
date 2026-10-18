@@ -5,7 +5,6 @@
 #include "FrequencyInputWidget.h"
 
 // Third-party headers
-#include <QFontDatabase>
 #include <QFontMetricsF>
 #include <QLinearGradient>
 #include <QMouseEvent>
@@ -26,15 +25,11 @@ FrequencyInputWidget::FrequencyInputWidget(QWidget* parent) : QWidget(parent)
    setMouseTracking(true);
    setCursor(Qt::PointingHandCursor);
 
-   // Use a large monospaced font for digits.
-   _digitFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-   _digitFont.setPointSize(20);
-   _digitFont.setWeight(QFont::DemiBold);
+   // Large monospaced digits in the same family as the app UI (embedded).
+   _digitFont = QFont(QStringLiteral("Roboto Mono"), 20, QFont::Medium);
 
-   // Smaller font for the "MHz" suffix.
-   _suffixFont = _digitFont;
-   _suffixFont.setPointSize(11);
-   _suffixFont.setWeight(QFont::Normal);
+   // Smaller weight/size for the "MHz" suffix.
+   _suffixFont = QFont(QStringLiteral("Roboto Mono"), 11, QFont::Normal);
 
    computeMetrics();
    freqToDigits();

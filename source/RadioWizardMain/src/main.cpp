@@ -7,6 +7,8 @@
 #include "StackTrace.h"
 
 #include <QApplication>
+#include <QFont>
+#include <QFontDatabase>
 #include <QPalette>
 #include <QStyleFactory>
 
@@ -48,7 +50,23 @@ int main(int argc, char* argv[])
    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText,  QColor(127, 127, 127));
    darkPalette.setColor(QPalette::Disabled, QPalette::Highlight,   QColor(80, 80, 80));
    darkPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
-   QApplication::setFont(QFont("Roboto", 12));
+   // Embed Roboto / Roboto Mono so CLI and IDE launches resolve the same
+   // faces without system font packages.
+   const char* const embeddedFonts[] = {
+      ":/fonts/Roboto-Regular.ttf",
+      ":/fonts/Roboto-Bold.ttf",
+      ":/fonts/RobotoMono-Regular.ttf",
+      ":/fonts/RobotoMono-Medium.ttf",
+      ":/fonts/RobotoMono-Bold.ttf",
+   };
+   for (const char* path : embeddedFonts)
+   {
+      if (QFontDatabase::addApplicationFont(QString::fromUtf8(path)) < 0)
+      {
+         GPWARN("Failed to load embedded font {}", path);
+      }
+   }
+   QApplication::setFont(QFont(QStringLiteral("Roboto"), 12));
    QApplication::setPalette(darkPalette);
 
    MainWindow w;
