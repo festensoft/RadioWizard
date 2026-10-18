@@ -81,6 +81,10 @@ jobs:
             -c tools.system.package_manager:sudo=True
 
       - name: Configure, build, and test (debug-asan)
+        env:
+          # Headless Linux runners have no display; Qt widget tests need this
+          # (also set in RealTimeGraphs TestMain when unset).
+          QT_QPA_PLATFORM: offscreen
         run: cmake --workflow --preset debug-asan
 
   # ===========================================================================

@@ -22,7 +22,7 @@
          "hidden": true,
          "cacheVariables": {
             "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release",
+            "CMAKE_MAP_IMPORTED_CONFIG_DEBUG": "Release;None;",
             "BUILD_TESTS": "ON"
          }
       },
@@ -118,7 +118,10 @@
          "name": "base",
          "hidden": true,
          "output": { "outputOnFailure": true },
-         "execution": { "noTestsAction": "error" }
+         "execution": { "noTestsAction": "error" },
+         "environment": {
+            "QT_QPA_PLATFORM": "offscreen"
+         }
       },
       {
          "name": "debug",
