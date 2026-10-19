@@ -55,6 +55,55 @@ If `conan install` fails building `openal-soft` with GCC 15, this project
 already disables OpenAL in Qt (`with_openal = False`) since RadioWizard does
 not use it.
 
+## liquid-dsp performance
+
+Channel filtering, resampling, and demodulation go through **liquid-dsp**.
+Its Conan recipe builds from source and, by default, lets liquid’s `configure`
+probe the **build machine** CPU and enable SIMD kernels:
+
+| Host | Typical liquid build |
+|------|----------------------|
+| Linux x86_64 (AVX2 CPU) | AVX2 `dotprod` / `sumsq` + `-mavx2` |
+| Apple Silicon | NEON `dotprod` + `-ffast-math` |
+
+The normal Setup `conan install` above (no extra `-o`) is what you want for
+local and shipped Release builds: full SIMD on that machine.
+
+### Do not copy CI’s `simdoverride` for day-to-day builds
+
+GitHub Actions passes `-o liquid-dsp/*:simdoverride=True` so liquid uses
+portable C only. That avoids `SIGILL` when a Conan cache built on one runner
+CPU is restored on another (ctest reports this as `Exception: Illegal`).
+It is **intentionally slower** and is for the CI test lane only.
+
+For a local build that matches CI’s dependency flags (e.g. reproducing a
+pipeline failure):
+
+```bash
+conan install . --output-folder=build --build=missing \
+  -s build_type=Release -s compiler.cppstd=gnu20 \
+  -o 'liquid-dsp/*:simdoverride=True'
+```
+
+If you used that option and want SIMD back, reinstall **without** it and
+force a liquid rebuild so Conan does not keep the portable package:
+
+```bash
+conan install . --output-folder=build --build=liquid-dsp \
+  -s build_type=Release -s compiler.cppstd=gnu20
+```
+
+Then reconfigure/rebuild with your usual preset (`release` for real use).
+
+### Related notes
+
+- Prefer the `release` preset for interactive SDR use; `debug` / `debug-asan`
+  add overhead unrelated to liquid’s SIMD choice.
+- UI cost (QPainter widgets today) is separate from I/Q / liquid throughput.
+  At modest sample rates, display work usually dominates before liquid does.
+- Future publishable Release artifacts should install Conan **without**
+  `simdoverride`, on each target OS, so end users get AVX2/NEON liquid.
+
 ## Configure, build, test
 
 Prefer workflow presets (configure + build + test in one step). CI runs the
